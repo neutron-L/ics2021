@@ -39,6 +39,20 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+
+static int cmd_si(char *args);
+
+static int cmd_info(char *args);
+
+static int cmd_x(char *args);
+
+static int cmd_p(char *args);
+
+static int cmd_w(char *args);
+
+static int cmd_d(char *args);
+
+
 static struct {
   const char *name;
   const char *description;
@@ -47,8 +61,15 @@ static struct {
   { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
   /* TODO: Add more commands */
+  {"si", "Let the program execute N instructions in a single step and pause \
+   the execution When n is not given, it defaults to 1", cmd_si},
+  {"info", "Print register status or monitor point information", cmd_info},
+  {"x", "Display the memory content of the specified address in hexadecimal format", cmd_x},
+  {"p", "Displays the value of the specified expression", cmd_p},
+  {"w", "Pauses the execution of the program when the value of the \
+  specified expression changes", cmd_w},
+  {"d", "Delete the monitoring point of the specified sequence number", cmd_d},
 
 };
 
@@ -76,6 +97,20 @@ static int cmd_help(char *args) {
   }
   return 0;
 }
+
+
+static int cmd_si(char *args)
+{
+  uint64_t n = 1;
+  if (args)
+  {
+    n = atoi(args);
+  }
+
+  cpu_exec(n);
+  return 0;
+}
+
 
 void sdb_set_batch_mode() {
   is_batch_mode = true;
