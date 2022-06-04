@@ -18,12 +18,12 @@ function init() {
   git commit -am "$1 $version initialized"$'\n\n'"$log"
 
   if [ $2 ] ; then
-    sed -i -e "/^export $2=.*/d" ~/.bashrc
-    echo "export $2=`readlink -e $1`" >> ~/.bashrc
+    sed -i -e "/^set -x $2 .*/d" ~/.fishrc
+    echo "set -x $2 `readlink -e $1`" >> ~/.fishrc
 
-    echo "By default this script will add environment variables into ~/.bashrc."
-    echo "After that, please run 'source ~/.bashrc' to let these variables take effect."
-    echo "If you use shell other than bash, please add these environment variables manually."
+    echo "By default this script will add environment variables into ~/.fishrc."
+    echo "After that, please run 'source ~/.fishrc' to let these variables take effect."
+    echo "If you use shell other than fish, please add these environment variables manually."
   fi
 }
 
