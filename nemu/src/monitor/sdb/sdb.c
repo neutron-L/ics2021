@@ -39,7 +39,6 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
-
 static int cmd_si(char *args);
 
 static int cmd_info(char *args);
@@ -98,7 +97,6 @@ static int cmd_help(char *args) {
   return 0;
 }
 
-
 static int cmd_si(char *args)
 {
   uint64_t n = 1;
@@ -110,7 +108,6 @@ static int cmd_si(char *args)
   cpu_exec(n);
   return 0;
 }
-
 
 static int cmd_info(char *args)
 {
@@ -142,6 +139,7 @@ static int cmd_info(char *args)
   }
 
   return 0;
+
 }
 
 static int cmd_x(char *args)
@@ -176,10 +174,9 @@ static int cmd_x(char *args)
     printf("\n");
   }
 
+
   return 0;
 }
-
-
 
 static int cmd_p(char *args)
 {
@@ -231,9 +228,17 @@ void sdb_mainloop() {
      * which may need further parsing
      */
     char *args = cmd + strlen(cmd) + 1;
+    /*
+     *  Remove leading spaces
+     */
+    while (isblank(*args))
+        args++;
+
     if (args >= str_end) {
       args = NULL;
     }
+    
+    
 
 #ifdef CONFIG_DEVICE
     extern void sdl_clear_event_queue();
