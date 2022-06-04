@@ -112,6 +112,38 @@ static int cmd_si(char *args)
 }
 
 
+static int cmd_info(char *args)
+{
+  /* extract the first argument */
+  char *arg = strtok(NULL, " ");
+
+  if (arg == NULL)
+  {
+    printf("info: missing operand\n");
+    printf("Try \"help info\" for more information\n");
+  }
+  else
+  {
+    /* Print register status */
+    if (!strcmp(arg, "r"))
+    {
+      isa_reg_display();
+    }
+    /* Print monitor point information */
+    else if (!strcmp(arg, "w"))
+    {
+      show_watchpoints();
+    }
+
+    else
+    {
+      printf("Usage: info [wr]\n");
+    }
+  }
+
+  return 0;
+}
+
 void sdb_set_batch_mode() {
   is_batch_mode = true;
 }
