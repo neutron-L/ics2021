@@ -18,6 +18,15 @@ static bool g_print_step = false;
 const rtlreg_t rzero = 0;
 rtlreg_t tmp_reg[4];
 
+
+// 指令环形缓冲区 - iringbuf
+#define IRING_BUFFER_SIZE 10
+#define IRING_ITEM_SIZE 64
+char *iringbuf[IRING_BUFFER_SIZE];
+int rear = 0;
+bool wrap = false;
+
+
 void device_update();
 void fetch_decode(Decode *s, vaddr_t pc);
 
@@ -27,6 +36,21 @@ bool check_watchpoints();
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) log_write("%s\n", _this->logbuf);
+#endif
+
+#ifdef CONFIG_IRINGTRACE_COND
+  if (IRINGTRACE_COND)
+  {
+    if (!iringbuf[rear])
+    {
+      iringbuf[rear] = (char*)calloc(IRING_ITEM_SIZE, 1);
+      Assert(iringbuf[rear], ,)
+    }
+    strncpy(iringbuf[rear], s->logbuf, IRING_ITEM_SIZE);
+    rear = (rear + 1) % IRING_BUFFER_SIZE;
+    if (rear == 0)
+      wrap = true;
+  }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
