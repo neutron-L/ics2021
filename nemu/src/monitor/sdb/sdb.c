@@ -179,6 +179,37 @@ static int cmd_x(char *args)
   return 0;
 }
 
+
+
+static int cmd_p(char *args)
+{
+  static int num = 1;
+  char * str_expr = strtok(NULL, " ");
+  bool success;
+  word_t res = expr(str_expr, &success);
+  if (!success)
+  {
+    Log("expression %s error\n", str_expr);
+    return 1;
+  }
+  printf("$%d = 0x%08x\t%u\n", num++, res, res);
+
+  return 0;
+}
+
+static int cmd_w(char *args)
+{
+  char * str_expr = strtok(NULL, " ");
+  return new_wp(str_expr);
+}
+
+static int cmd_d(char *args)
+{
+  int NO = atoi(strtok(NULL, " "));
+  return free_wp(NO);
+}
+
+
 void sdb_set_batch_mode() {
   is_batch_mode = true;
 }
