@@ -130,6 +130,17 @@ static inline def_rtl(host_lm, rtlreg_t* dest, const void *addr, int len) {
   }
 }
 
+// add a host_lms
+static inline def_rtl(host_lms, rtlreg_t* dest, const void *addr, int len) {
+  switch (len) {
+    case 4: *dest = (sword_t)*(int32_t *)addr; return;
+    case 1: *dest = (sword_t)*( int8_t *)addr; return;
+    case 2: *dest = (sword_t)*(int16_t *)addr; return;
+    IFDEF(CONFIG_ISA64, case 8: *dest = (sword_t)*(int64_t *)addr; return);
+    IFDEF(CONFIG_RT_CHECK, default: assert(0));
+  }
+}
+
 static inline def_rtl(host_sm, void *addr, const rtlreg_t *src1, int len) {
   switch (len) {
     case 4: *(uint32_t *)addr = *src1; return;
