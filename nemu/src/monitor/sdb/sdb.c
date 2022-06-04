@@ -144,6 +144,41 @@ static int cmd_info(char *args)
   return 0;
 }
 
+static int cmd_x(char *args)
+{
+  char * arg1 = strtok(NULL, " ");
+  char * arg2 = strtok(NULL, " ");
+  int n = atoi(arg1);
+  bool success;
+  vaddr_t addr = expr(arg2, &success);
+  printf("show 0x%08x: \n", addr);
+
+  if (!success)
+  {
+    Log("expression %s error\n", arg2);
+    return 1;
+  }
+
+  word_t data;
+  int idx = 0;
+  int line;
+  while(idx < n)
+  {
+    printf("0x%08x: ", addr);
+    line = 4;
+    while (idx < n && line--)
+    {
+      data = vaddr_read(addr, 4);
+      printf("0x%08x\t", data);
+      idx++;
+      addr += 4;
+    }
+    printf("\n");
+  }
+
+  return 0;
+}
+
 void sdb_set_batch_mode() {
   is_batch_mode = true;
 }
