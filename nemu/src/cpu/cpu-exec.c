@@ -20,12 +20,14 @@ rtlreg_t tmp_reg[4];
 
 
 // 指令环形缓冲区 - iringbuf
+#ifdef CONFIG_IRINGTRACE_COND
 #define IRING_BUFFER_SIZE 10
 #define IRING_ITEM_SIZE 64
 static char *iringbuf[IRING_BUFFER_SIZE];
 static int rear = 0;
 static bool wrap = false;
-static char * iring_log = "../../build/iring-log.txt";
+static char * iring_log = "/home/rda/ics2021/nemu/build/iring-log.txt";
+#endif
 
 void device_update();
 void fetch_decode(Decode *s, vaddr_t pc);
@@ -39,18 +41,18 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #endif
 
 #ifdef CONFIG_IRINGTRACE_COND
-  if (IRINGTRACE_COND)
+  
+  if (!iringbuf[rear])
   {
-    if (!iringbuf[rear])
-    {
-      iringbuf[rear] = (char*)calloc(IRING_ITEM_SIZE, 1);
-      Assert(iringbuf[rear], "Instruction buffer request failed")
-    }
-    strncpy(iringbuf[rear], s->logbuf, IRING_ITEM_SIZE);
-    rear = (rear + 1) % IRING_BUFFER_SIZE;
-    if (rear == 0)
-      wrap = true;
+    iringbuf[rear] = (char*)calloc(IRING_ITEM_SIZE, 1);
+    Assert(iringbuf[rear], "Instruction buffer request failed");
   }
+  Assert(strlen(_this->logbuf) <  IRING_ITEM_SIZE, "Logbuf is too long\n");
+  strncpy(iringbuf[rear], _this->logbuf, strlen(_this->logbuf));
+  rear = (rear + 1) % IRING_BUFFER_SIZE;
+  if (rear == 0)
+    wrap = true;
+  
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
@@ -151,17 +153,27 @@ void cpu_exec(uint64_t n) {
 
       #ifdef CONFIG_IRINGTRACE
       FILE* fp = fopen(iring_log, "w");
-      fprintf(fp, "%sINSTRUCTION TRACE:\n", ASNI_FG_BLUE);
+      Assert(fp != NULL, "open iring log file error!\n");
+      fprintf(fp, "INSTRUCTION TRACE:\n");
       if (nemu_state.state == NEMU_ABORT || nemu_state.halt_ret != 0)
       {
-        int start = wrap ? rear : 0;
-        int end = (rear - 2 + IRING_BUFFER_SIZE) % IRING_BUFFER_SIZE; 
-        while (start <= end)
-          fprintf(fp, "    %s%s\n", ASNI_NONE, iringbuf[start++]);
-        end = (rear - 1 + IRING_BUFFER_SIZE) % IRING_BUFFER_SIZE;
-        fprintf(fp, "--> %s%s\n", ASNI_FG_RED , iringbuf[end]);
+        int idx = wrap ? rear : 0;
+        int num = wrap ? IRING_BUFFER_SIZE : rear;
+        num--;
+        while (num--)
+        {
+          fprintf(fp, "    %s\n", iringbuf[idx]);
+          // release iring buf
+          free(iringbuf[idx]);
+          idx = (idx + 1) % IRING_BUFFER_SIZE;
+        }
+        idx = (rear - 1 + IRING_BUFFER_SIZE) % IRING_BUFFER_SIZE;
+        fprintf(fp, "--> %s\n", iringbuf[idx]);
+        free(iringbuf[idx]);
       }
       fclose(fp);
+
+      
       #endif
       // fall through
     case NEMU_QUIT: statistic();
