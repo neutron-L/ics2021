@@ -44,7 +44,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
     if (!iringbuf[rear])
     {
       iringbuf[rear] = (char*)calloc(IRING_ITEM_SIZE, 1);
-      Assert(iringbuf[rear], ,)
+      Assert(iringbuf[rear], "Instruction buffer request failed")
     }
     strncpy(iringbuf[rear], s->logbuf, IRING_ITEM_SIZE);
     rear = (rear + 1) % IRING_BUFFER_SIZE;
