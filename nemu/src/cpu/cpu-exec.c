@@ -155,10 +155,10 @@ void cpu_exec(uint64_t n) {
       if (nemu_state.state == NEMU_ABORT || nemu_state.halt_ret != 0)
       {
         int start = wrap ? rear : 0;
-        int end = (rear - 2 + TRACE_INSTR) % TRACE_INSTR; 
+        int end = (rear - 2 + IRING_BUFFER_SIZE) % IRING_BUFFER_SIZE; 
         while (start <= end)
           fprintf(fp, "    %s%s\n", ASNI_NONE, iringbuf[start++]);
-        end = (rear - 1 + TRACE_INSTR) % TRACE_INSTR;
+        end = (rear - 1 + IRING_BUFFER_SIZE) % IRING_BUFFER_SIZE;
         fprintf(fp, "--> %s%s\n", ASNI_FG_RED , iringbuf[end]);
       }
       fclose(fp);
