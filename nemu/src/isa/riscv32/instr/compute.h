@@ -1,3 +1,6 @@
+void log_call(word_t addr, word_t t_addr);
+void log_ret(word_t addr, word_t t_addr);
+
 def_EHelper(lui) {
   rtl_li(s, ddest, id_src1->imm);
 }
@@ -10,6 +13,10 @@ def_EHelper(auipc) {
 def_EHelper(jal) {
   rtl_addi(s, ddest, &(s->pc), 4);
   rtl_addi(s, &(s->dnpc), &(s->pc), id_src1->imm);
+
+  //  whether function call
+   if (ddest == &cpu.gpr[1]._32)
+     log_call(s->pc, s->dnpc);
 }
 
 // immediate arithmetric
@@ -51,6 +58,13 @@ def_EHelper(srli) {
 def_EHelper(jalr) {
   rtl_addi(s, ddest, &(s->pc), 4);
   rtl_addi(s, &(s->dnpc), dsrc1, id_src2->imm);
+
+  // whether function call
+  if (ddest == &cpu.gpr[1]._32)
+    log_call(s->pc, s->dnpc);
+    // whether function ret
+  if (dsrc1 == &cpu.gpr[1]._32 && id_src2->imm == 0)
+    log_ret(s->pc, s->dnpc);
 }
 
 def_EHelper(andi) {
