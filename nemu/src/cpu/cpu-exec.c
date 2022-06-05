@@ -22,10 +22,10 @@ rtlreg_t tmp_reg[4];
 // 指令环形缓冲区 - iringbuf
 #define IRING_BUFFER_SIZE 10
 #define IRING_ITEM_SIZE 64
-char *iringbuf[IRING_BUFFER_SIZE];
-int rear = 0;
-bool wrap = false;
-
+static char *iringbuf[IRING_BUFFER_SIZE];
+static int rear = 0;
+static bool wrap = false;
+static char * iring_log = "../../build/iring-log.txt";
 
 void device_update();
 void fetch_decode(Decode *s, vaddr_t pc);
@@ -148,6 +148,21 @@ void cpu_exec(uint64_t n) {
            (nemu_state.halt_ret == 0 ? ASNI_FMT("HIT GOOD TRAP", ASNI_FG_GREEN) :
             ASNI_FMT("HIT BAD TRAP", ASNI_FG_RED))),
           nemu_state.halt_pc);
+
+      #ifdef CONFIG_IRINGTRACE
+      FILE* fp = fopen(iring_log, "w");
+      fprintf(fp, "%sINSTRUCTION TRACE:\n", ASNI_FG_BLUE);
+      if (nemu_state.state == NEMU_ABORT || nemu_state.halt_ret != 0)
+      {
+        int start = wrap ? rear : 0;
+        int end = (rear - 2 + TRACE_INSTR) % TRACE_INSTR; 
+        while (start <= end)
+          fprintf(fp, "    %s%s\n", ASNI_NONE, iringbuf[start++]);
+        end = (rear - 1 + TRACE_INSTR) % TRACE_INSTR;
+        fprintf(fp, "--> %s%s\n", ASNI_FG_RED , iringbuf[end]);
+      }
+      fclose(fp);
+      #endif
       // fall through
     case NEMU_QUIT: statistic();
   }
