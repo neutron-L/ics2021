@@ -9,15 +9,31 @@ static uint8_t *pmem = NULL;
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 #endif
 
+#ifdef CONFIG_MTRACE_COND
+static char * mtrace_log = "/home/rda/ics2021/nemu/build/mtrace-log.txt";
+#endif
+
 uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
 paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
 
 static word_t pmem_read(paddr_t addr, int len) {
   word_t ret = host_read(guest_to_host(addr), len);
+  #ifdef CONFIG_MTRACE_COND
+  FILE* fp = fopen(mtrace_log, "a");
+  Assert(fp != NULL, "open mtrace log error!\n");
+  fprintf(fp, "read: 0x%8x\n", addr);
+  fclose(fp);
+  #endif
   return ret;
 }
 
 static void pmem_write(paddr_t addr, int len, word_t data) {
+  #ifdef CONFIG_MTRACE_COND
+  FILE* fp = fopen(mtrace_log, "a");
+  Assert(fp != NULL, "open mtrace log error!\n");
+  fprintf(fp, "write: 0x%8x\n", addr);
+  fclose(fp);
+  #endif
   host_write(guest_to_host(addr), len, data);
 }
 
