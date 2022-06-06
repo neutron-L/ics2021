@@ -22,7 +22,7 @@ static word_t pmem_read(paddr_t addr, int len) {
   FILE* fp = fopen(mtrace_log, "a");
   Assert(fp != NULL, "open mtrace log error!\n");
   fprintf(fp, "read: 0x%8x\n", addr);
-  fclose(fp);
+  Assert(fclose(fp) == 0, "fail to close mtrace log file\n");
   #endif
   return ret;
 }
@@ -32,7 +32,7 @@ static void pmem_write(paddr_t addr, int len, word_t data) {
   FILE* fp = fopen(mtrace_log, "a");
   Assert(fp != NULL, "open mtrace log error!\n");
   fprintf(fp, "write: 0x%8x\n", addr);
-  fclose(fp);
+  Assert(fclose(fp) == 0, "fail to close mtrace log file\n");
   #endif
   host_write(guest_to_host(addr), len, data);
 }
